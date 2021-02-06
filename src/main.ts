@@ -5,7 +5,7 @@ import { algorithm } from './algorithm.ts';
 import { read, write } from './io.ts';
 
 const spinner = wait('Google Hash Code 2021 🎉').start();
-const file = 'a_example.txt';
+const file = 'a_example.in';
 const input = read(file);
 
 optimize({
@@ -20,7 +20,7 @@ optimize({
             this.score = score;
             write(file, output);
         }
-        spinner.text = `file: ${file}\n weights: ${weights.join(' - ')}`;
+        spinner.text = `file: ${file}\n weights: ${weights.map(w => w.toPrecision(3)).join(' - ')}`;
         return score;
     },
 });
