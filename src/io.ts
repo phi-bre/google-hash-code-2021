@@ -4,6 +4,11 @@ export interface Pizza {
     ingredients: Set<string>;
 }
 
+export interface Team {
+    team_size: number;
+    pizzas: Array<number>;
+}
+
 export interface Input {
     num_available_pizzas: number;
     num_2_person_teams: number;
@@ -13,11 +18,7 @@ export interface Input {
 }
 
 export interface Output {
-    num_delivered_pizzas: number;
-    teams: Array<{
-        team_size: number;
-        pizzas: Array<number>;
-    }>;
+    teams: Array<Team>;
 }
 
 export function read(file: string): Input {
@@ -42,7 +43,7 @@ export function read(file: string): Input {
 }
 
 export function write(file: string, output: Output) {
-    let text = `${output.num_delivered_pizzas}\n`;
+    let text = `${output.teams.length}\n`;
     output.teams.forEach(({team_size, pizzas}) => {
         text += team_size + ' ' + [...pizzas].join(' ') + '\n';
     });
