@@ -18,7 +18,7 @@ optimize({
         let score = scored(output);
         if (score > this.score) {
             this.score = score;
-            write(file, this);
+            write(file, output);
         }
         spinner.text = `file: ${file}\n weights: ${weights.join(' - ')}`;
         return score;
