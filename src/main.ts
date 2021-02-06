@@ -11,7 +11,7 @@ const input = read(file);
 optimize({
     file,
     score: 0,
-    iterations: 100,
+    iterations: 1,
     weights: [1, 1, 1],
     exec(weights: number[]) {
         const output = algorithm(input, weights);
@@ -20,7 +20,7 @@ optimize({
             this.score = score;
             write(file, output);
         }
-        spinner.text = `file: ${file}\n weights: ${weights.map(w => w.toPrecision(3)).join(' - ')}`;
+        spinner.text = `file: ${file}\n weights: ${weights.map(w => w.toPrecision(3)).join(' - ')}\n score: ${score} highest: ${this.score}`;
         return score;
     },
 });
