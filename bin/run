@@ -1,1 +1,1 @@
-deno --unstable run --no-check --allow-read --allow-write src/main.ts
+deno --unstable run --no-check --allow-read --allow-write --allow-run src/main.ts
