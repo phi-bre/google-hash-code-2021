@@ -1,0 +1,1 @@
+zip -vr out/source.zip . -x '*.DS_Store' '.git**' 'out/*' '*.pdf' '.idea/*'
