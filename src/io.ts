@@ -18,11 +18,12 @@ export interface Input {
 }
 
 export interface Output {
+    score: number;
     teams: Array<Team>;
 }
 
 export function read(file: string): Input {
-    const text = Deno.readTextFileSync(`in/${file}`);
+    const text = Deno.readTextFileSync(`in/${file}.in`);
     const [header, ...body] = text.split('\n');
     const [num_available_pizzas, num_2_person_teams, num_3_person_teams, num_4_person_teams] = header.split(' ').map(Number);
     body.pop(); // Remove empty line
@@ -47,6 +48,6 @@ export function write(file: string, output: Output) {
     output.teams.forEach(({team_size, pizzas}) => {
         text += team_size + ' ' + [...pizzas].join(' ') + '\n';
     });
-    Deno.writeTextFile(`out/${file}`, text);
+    Deno.writeTextFileSync(`out/${file}.out`, text);
     // Deno.writeTextFile(`out/${Date.now()}.json`, JSON.stringify(context));
 }

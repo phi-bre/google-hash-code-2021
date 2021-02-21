@@ -1,30 +1,38 @@
-// import { wait } from 'https://deno.land/x/wait/mod.ts';
-import { optimize } from './optimize.ts';
-import { scored } from './scored.ts';
-import { algorithm } from './algorithm.ts';
+import './utils.ts';
 import { read, write } from './io.ts';
+import { algorithm } from './algorithm.ts';
 
-// const spinner = wait('Google Hash Code 2021 🎉').start();
-const file = 'a_example.in';
-const input = read(file);
-
+console.log('Google Hash Code 2021 🎉');
 const process = Deno.run({ cmd: ['bin/zip'], stdout: 'null' });
 await process.status();
 process.close();
 
-optimize({
-    file,
-    score: 0,
-    iterations: 1,
-    weights: [1],
-    exec(weights: number[]) {
-        const output = algorithm(input, weights);
-        let score = scored(input, output);
-        if (score > this.score) {
-            this.score = score;
+export const file = 'd_many_pizzas';
+export const input = read(file);
+
+export const ingredients = new Map<string, number>();
+for (const pizza of input.pizzas) {
+    for (const ingredient of pizza.ingredients) {
+        ingredients.set(ingredient, (ingredients.get(ingredient) || 0) + 1);
+    }
+}
+
+export let score = 0;
+export const iterations = Infinity;
+export const weights = Array(3).fill(0).map(() => Math.random() * 2 - 1);
+export const velocities = new Array(weights.length).fill(2);
+for (let i = 0; i < iterations && !velocities.every(v => v === 0); i++) {
+    for (let j = 0; j < weights.length; j++) {
+        weights[j] += velocities[j];
+        const output = algorithm(weights);
+        if (output.score > score) {
+            velocities[j] *= +2;
+            score = output.score;
             write(file, output);
+            console.log(`score: ${output.score} weights: ${weights.inspect()} velocities: ${velocities.inspect()}`);
+        } else {
+            weights[j] -= velocities[j];
+            velocities[j] /= -2;
         }
-        // spinner.text = `file: ${file}\n weights: ${weights.map(w => w.toPrecision(3)).join(' - ')}\n score: ${score} highest: ${this.score}`;
-        return score;
-    },
-});
+    }
+}
