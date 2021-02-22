@@ -3,6 +3,14 @@ declare global {
         each(callback: (value: T, index: number, array: T[]) => any): this;
         shuffle(): this;
         inspect(): string;
+        stats(reducer: (item: T) => number): Statistic;
+    }
+
+    interface Statistic {
+        max: number;
+        min: number;
+        average: number;
+        spread: number;
     }
 }
 
@@ -21,4 +29,13 @@ Array.prototype.shuffle = function () {
 
 Array.prototype.inspect = function () {
     return `[${this.map(w => w).join(', ')}]`;
+}
+
+Array.prototype.stats = function (reducer) {
+    const reduced = this.map(reducer);
+    const average = this.reduce((a, _, i) => a + reduced[i], 0) / this.length;
+    const max = Math.max(...reduced);
+    const min = Math.min(...reduced);
+    const spread = (average - min) / max;
+    return { max, min, average, spread };
 }

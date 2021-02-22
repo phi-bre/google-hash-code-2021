@@ -1,22 +1,15 @@
 import { Input, Output, Pizza, Team } from './io.ts';
-import { input, ingredients } from './main.ts';
+import { input } from './main.ts';
 import { scored } from './scored.ts';
 
 export function algorithm(weights): Output {
     const pizzaScores = input.pizzas
-        .slice()
-        .shuffle()
-        .map(pizza => {
-            const uniqueness = Array
-                .from(pizza.ingredients)
-                .reduce((u, i) => u + ingredients.get(i), 0);
-            return {
-                pizza, score: (
-                    + pizza.num_ingredients * weights[0]
-                    + uniqueness * weights[1]
-                )
-            };
-        })
+        .map(pizza => ({
+            pizza, score: (
+                + pizza.num_ingredients * weights[0]
+                + pizza.uniqueness * weights[1]
+            )
+        }))
         .sort((a, b) => a.score - b.score);
 
     const team_sizes = [

@@ -2,6 +2,7 @@ export interface Pizza {
     index: number;
     num_ingredients: number;
     ingredients: Set<string>;
+    uniqueness: number;
 }
 
 export interface Team {
@@ -36,6 +37,7 @@ export function read(file: string): Input {
             const [num_ingredients, ...ingredients] = part.split(' ');
             return ({
                 index,
+                uniqueness: 0,
                 num_ingredients: Number(num_ingredients),
                 ingredients: new Set(ingredients),
             });
