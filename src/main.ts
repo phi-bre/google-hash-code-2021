@@ -2,6 +2,22 @@ import './utils.ts';
 import { read, write } from './io.ts';
 import { algorithm } from './algorithm.ts';
 
+declare global {
+    interface Array<T> {
+        each(callback: (value: T, index: number, array: T[]) => any): this;
+        shuffle(): this;
+        inspect(): string;
+        stats(reducer: (item: T) => number): Statistic;
+    }
+
+    interface Statistic {
+        max: number;
+        min: number;
+        average: number;
+        spread: number;
+    }
+}
+
 console.log('Google Hash Code 2021 🎉');
 const process = Deno.run({ cmd: ['bin/zip'], stdout: 'null' });
 await process.status();
@@ -20,7 +36,7 @@ for (const pizza of input.pizzas) {
 for (const pizza of input.pizzas) {
     pizza.uniqueness = Array
         .from(pizza.ingredients)
-        .reduce((u, i) => u + ingredients.get(i), 0)
+        .reduce((u, i) => u + ingredients.get(i)!, 0)
         / ingredients.size;
 }
 

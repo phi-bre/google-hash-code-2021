@@ -2,7 +2,7 @@ import { Input, Output, Pizza, Team } from './io.ts';
 import { input } from './main.ts';
 import { scored } from './scored.ts';
 
-export function algorithm(weights): Output {
+export function algorithm(weights: number[]): Output {
     const pizzaScores = input.pizzas
         .map(pizza => ({
             pizza, score: (

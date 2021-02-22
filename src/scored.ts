@@ -5,7 +5,7 @@ export function scored(output: Partial<Output>): number {
     let delivered = new Set<number>();
     let score = 0;
 
-    for (const team of output.teams) {
+    for (const team of output.teams!) {
         const used_ingredients = new Set<string>();
         let team_score = 0;
 

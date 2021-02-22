@@ -11,11 +11,11 @@ export interface Team {
 }
 
 export interface Input {
-    num_available_pizzas: number;
-    num_2_person_teams: number;
-    num_3_person_teams: number;
-    num_4_person_teams: number;
-    pizzas: Array<Pizza>;
+    readonly num_available_pizzas: number;
+    readonly num_2_person_teams: number;
+    readonly num_3_person_teams: number;
+    readonly num_4_person_teams: number;
+    readonly pizzas: Array<Pizza>;
 }
 
 export interface Output {

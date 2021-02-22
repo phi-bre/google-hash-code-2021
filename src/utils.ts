@@ -1,20 +1,4 @@
-declare global {
-    interface Array<T> {
-        each(callback: (value: T, index: number, array: T[]) => any): this;
-        shuffle(): this;
-        inspect(): string;
-        stats(reducer: (item: T) => number): Statistic;
-    }
-
-    interface Statistic {
-        max: number;
-        min: number;
-        average: number;
-        spread: number;
-    }
-}
-
-Array.prototype.each = function (callback) {
+Array.prototype.each = function (callback: (value: any, index: number, array: any[]) => void) {
     this.forEach(callback);
     return this;
 };
