@@ -1,6 +1,4 @@
 import './utils.ts';
-import { read, write } from './io.ts';
-import { algorithm } from './algorithm.ts';
 
 declare global {
     interface Array<T> {
@@ -23,50 +21,14 @@ const process = Deno.run({ cmd: ['bin/zip'], stdout: 'null' });
 await process.status();
 process.close();
 
-export const file = 'd_many_pizzas';
-export const input = read(file);
+import { file } from './setup.ts';
+import { write } from './io.ts';
+import { algorithm } from './algorithm.ts';
 
-export const ingredients = new Map<string, number>();
-for (const pizza of input.pizzas) {
-    for (const ingredient of pizza.ingredients) {
-        ingredients.set(ingredient, (ingredients.get(ingredient) || 0) + 1);
-    }
-}
-
-for (const pizza of input.pizzas) {
-    pizza.uniqueness = Array
-        .from(pizza.ingredients)
-        .reduce((u, i) => u + ingredients.get(i)!, 0)
-        / ingredients.size;
-}
-
-console.table({
-    pizza_ingredients: input.pizzas.stats(pizza => pizza.num_ingredients),
-    uniqueness: input.pizzas.stats(pizza => pizza.uniqueness),
-    ingredients: [...ingredients.values()].stats(i => i),
-    ingredients_length: ingredients.size,
-});
+// Trash code ahead...
 
 export let score = 0;
 export const iterations = Infinity;
-// export const weights = Array(3).fill(0).map(() => Math.random() * 2 - 1);
-// export const velocities = new Array(weights.length).fill(2);
-// for (let i = 0; i < iterations && !velocities.every(v => v === 0); i++) {
-//     for (let j = 0; j < weights.length; j++) {
-//         weights[j] += velocities[j];
-//         const output = algorithm(weights);
-//         if (output.score > score) {
-//             velocities[j] *= +2;
-//             score = output.score;
-//             write(file, output);
-//             console.log(`score: ${output.score} weights: ${weights.inspect()} velocities: ${velocities.inspect()}`);
-//         } else {
-//             weights[j] -= velocities[j];
-//             velocities[j] /= -2;
-//         }
-//     }
-// }
-
 let weights = new Array(3).fill(0).map(Math.random)//.map(n => n * 10);
 let steps = weights.slice().fill(1).map(Math.random);
 let last = weights.slice().fill(0);
@@ -104,14 +66,6 @@ for (let i = 0; i < iterations; i++) {
     if (Math.max(right.score, left.score) <= lastPoints) {
         weight = (weight + 1) % weights.length;
     }
-
-    // // Normalize
-    // if (i % weights.length === 0) {
-    //     const max = Math.max(...weights);
-    //     for (let j = 0; j < weights.length; j++) {
-    //         weights[j] /= max;
-    //     }
-    // }
 
     lastPoints = Math.max(right.score, left.score);
     if (lastPoints > score) {
