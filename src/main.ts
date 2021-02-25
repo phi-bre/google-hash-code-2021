@@ -25,6 +25,8 @@ import { file } from './setup.ts';
 import { write } from './io.ts';
 import { algorithm } from './algorithm.ts';
 
+// console.log(JSON.stringify(algorithm([]), undefined, 2))
+
 write(file, algorithm([]));
 
 // Trash code ahead...

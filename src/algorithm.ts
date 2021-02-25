@@ -1,24 +1,27 @@
 import {Input, Intersection, Schedule, Output, Car, StreetSchedule} from './io.ts';
-import {scored} from './scored.ts';
 import {input, intersections} from './setup.ts';
 
 
 
 export function algorithm(weights: number[]): Output {
-    const schedules = intersections
+    const schedules: Array<Schedule> = intersections
         .map(intersection => {
             return {
                 intersection,
                 streetSchedules: intersection.streets
-                    .map(street => ({
-                        name: street.name,
-                        duration: street.cars.length,
-                    }))
-                    .sort((a, b) => a.duration - b.duration)
+                    .map(street => {
+                        return ({
+                            street,
+                            duration: Math.min(Math.floor(Math.random() * street.cars.length) + 1, input.duration),
+                        });
+                    })
+                    .filter(schedule => schedule.duration > 0)
+                    .shuffle()
             }
         })
+        .filter(intersection => intersection.streetSchedules.length)
+        .shuffle()
 
-    console.log(schedules)
 
     // for (let i = 0; i < input.intersectionCount; i++) {
     //     const streets = input.streets.filter(street => street.to == i);

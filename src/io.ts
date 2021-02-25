@@ -36,7 +36,7 @@ export interface Schedule {
 }
 
 export interface StreetSchedule {
-    name: string;
+    street: Street;
     duration: number;
 }
 
@@ -88,7 +88,7 @@ export function write(file: string, output: Output) {
     let text = `${output.schedules.length}\n`;
     for (const schedule of output.schedules) {
         text += `${schedule.intersection.id}\n${schedule.streetSchedules.length}\n${
-            schedule.streetSchedules.map(({ name, duration }) => `${name} ${duration}`).join('\n')
+            schedule.streetSchedules.map(({ street, duration }) => `${street.name} ${duration}`).join('\n')
         }\n`;
     }
     Deno.writeTextFileSync(`out/${file}`, text);
