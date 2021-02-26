@@ -1,55 +1,58 @@
-import { Output, Schedule, Street, StreetSchedule } from './io.ts';
+import { Output, Schedule } from './io.ts';
 import { input } from './setup.ts';
 
-const streetNames = new Map<string, Street>();
-
-// input.streets.each(street => streetNames.set(street.name, street));
-
-export function scored(output: Output): number {
-    const cars = input.cars.map(car => ({ ...car, path: car.path.slice() }));
-
-    // for (const schedule of output.schedules) {
-    //     for (const streetSchedules of schedule.streetSchedules) {
-    //         streetSchedules.duration
-    //     }
-    // }
-
-    const durations = new Map<Schedule, number>();
-    const currentStreetSchedule = new Map<Schedule, StreetSchedule>();
-    output.schedules.each(schedule => {
-        durations.set(schedule, 0);
-        currentStreetSchedule.set(schedule, schedule.streetSchedules[0]);
-    });
+export function scored(output: Omit<Output, 'score'>): Output {
+    const schedules = new Set(output.schedules.map(schedule => ({ ...schedule, index: 0 })));
+    const streets = Object.fromEntries(input.streets.map(street => [street.name, {...street, index: 0}]));
+    const cars = new Set(input.cars.map(car => ({
+        ...car,
+        path: car.path.map(street => streets[street.name]),
+        street: 0,
+        index: 0,
+    })));
+    let score = 0;
 
     for (let t = 0; t < input.duration; t++) {
-        for (const schedule of output.schedules) {
-            if (schedule.streetSchedules.length === 0) {
-                break;
+        for (const schedule of schedules) {
+            const street = streets[schedule.streetSchedules[schedule.index].street.name];
+
+            // console.log(street.name, schedule.intersection.id);
+
+            if (street.index > 0) {
+                street.index--;
+            } else if (street.index === 0) {
+                schedule.index++;
+                // console.log(schedule.index, schedule.streetSchedules.length)
+                if (schedule.index === schedule.streetSchedules.length) {
+                    schedules.delete(schedule);
+                    break;
+                }
+                street.index = schedule.streetSchedules[schedule.index].duration;
             }
+        }
 
-            let streetSchedule = currentStreetSchedule.get(schedule)!;
-            let duration = durations.get(schedule)!;
+        const taken: Record<string, boolean> = {};
+        for (const car of cars) {
+            const street = car.path[car.street];
 
-            if (streetSchedule.duration === 0) {
-                break;
+            if (car.index < street.duration) {
+                car.index++;
+            } else if (car.index === street.duration) {
+                car.street++;
+
+                if (car.street === car.path.length) {
+                    cars.delete(car);
+                    score += input.carScore + (input.duration - t);
+                    break;
+                }
+
+                if (street.index !== 0 && !taken[car.street]) { // is green
+                    car.index = 0;
+                    taken[car.street] = true;
+                }
             }
-
-            if (duration >= streetSchedule.duration) {
-                streetSchedule = schedule.streetSchedules[schedule.streetSchedules.indexOf(streetSchedule) + 1];
-                currentStreetSchedule.set(schedule, streetSchedule);
-                duration = 0;
-                durations.set(schedule, 0);
-            }
-
-            const [car] = streetSchedule.street.cars;
-            car.path.shift();
-            const [nextStreet] = car.path;
-            streetNames.get(nextStreet)!.cars.push(car);
-            durations.set(schedule, duration + 1);
         }
     }
 
-    return cars
-        .filter(car => car.path.length === 0)
-        .reduce(score => score + input.carScore, 0);
+    return {...output, score};
 }

@@ -1,26 +1,95 @@
-import {Input, Intersection, Schedule, Output, Car, StreetSchedule} from './io.ts';
-import {input, intersections} from './setup.ts';
+import { Car, Output, Schedule } from './io.ts';
+import { input } from './setup.ts';
 
-
+interface SimulationCar extends Car {
+    street: number;
+    index: number;
+}
 
 export function algorithm(weights: number[]): Output {
-    const schedules: Array<Schedule> = intersections
-        .map(intersection => {
-            return {
-                intersection,
-                streetSchedules: intersection.streets
-                    .map(street => {
-                        return ({
-                            street,
-                            duration: Math.min(Math.floor(Math.random() * street.cars.length) + 1, input.duration),
-                        });
-                    })
-                    .filter(schedule => schedule.duration > 0)
-                    .shuffle()
+    const intersections = input.intersections.map(intersection => ({
+        ...intersection,
+        schedule: <Schedule>{intersection: intersection, streetSchedules: []},
+        green: undefined as undefined | string
+    }));
+    const cars = new Set(input.cars.map(car => ({...car, street: 0, index: 0})));
+    const streets = Object.fromEntries(input.streets.map(street => [street.name, {
+        ...street,
+        cars: Array.from(cars).filter(car => car.path[0].name === street.name),
+        index: 0
+    }]));
+    let score = 0;
+
+    for (let t = 0; t < input.duration; t++) {
+        for (const car of cars) {
+            if (car.index > 0) {
+                car.index--;
+                continue;
             }
-        })
-        .filter(intersection => intersection.streetSchedules.length)
-        .shuffle()
+
+            // At the end of the street
+            const street = streets[car.path[car.street].name];
+            street.cars.push(car);
+        }
+
+        for (const intersection of intersections) {
+            if (intersection.green) {
+                const street = streets[intersection.green];
+                if (street.index > 0) {
+                    street.index--;
+
+                    // "progress" car
+                    if (street.cars.length) {
+                        const car = street.cars.shift()!;
+                        car.street++;
+
+                        if (car.street >= car.path.length) {
+                            cars.delete(car);
+                            score += input.carScore + (input.duration - t);
+                        } else {
+                            car.index = car.path[car.street].duration;
+                        }
+                    }
+
+                    continue;
+                }
+            }
+
+            // possibility to change street
+            const [nextStreet] = intersection.streets
+                .sort((a, b) => streets[b.name].cars.length - streets[a.name].cars.length); // TODO
+
+            if (streets[nextStreet.name].cars.length) {
+                intersection.green = nextStreet.name;
+                streets[nextStreet.name].index = nextStreet.duration;
+                intersection.schedule.streetSchedules.push({duration: 1, street: nextStreet});
+            } else {
+                intersection.green = undefined;
+            }
+        }
+    }
+
+    const schedules = intersections
+        .map(intersection => intersection.schedule)
+        .filter(schedule => schedule.streetSchedules.length);
+
+    // const schedules: Array<Schedule> = input.intersections
+    //     .map(intersection => {
+    //         return {
+    //             intersection,
+    //             streetSchedules: intersection.streets
+    //                 .map(street => {
+    //                     return ({
+    //                         street,
+    //                         duration: Math.min(Math.floor(Math.random() * street.cars.length) + 1, input.duration),
+    //                     });
+    //                 })
+    //                 .filter(schedule => schedule.duration > 0)
+    //                 .shuffle()
+    //         }
+    //     })
+    //     .filter(intersection => intersection.streetSchedules.length)
+    //     .shuffle()
 
 
     // for (let i = 0; i < input.intersectionCount; i++) {
@@ -57,5 +126,5 @@ export function algorithm(weights: number[]): Output {
     //     // }
     // }
 
-    return {schedules, score: 0};
+    return {schedules, score};
 }

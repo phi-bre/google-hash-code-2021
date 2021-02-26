@@ -25,9 +25,10 @@ import { file } from './setup.ts';
 import { write } from './io.ts';
 import { algorithm } from './algorithm.ts';
 
-// console.log(JSON.stringify(algorithm([]), undefined, 2))
-
-write(file, algorithm([]));
+const output = algorithm([]);
+// console.dir(output, { depth: 6 });
+console.log(output.score)
+write(file, output);
 
 // Trash code ahead...
 

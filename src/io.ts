@@ -8,14 +8,12 @@ export interface Street {
     from: number;
     to: number;
     duration: number;
-
-    cars: Array<Car>;
+    // cars: Array<Car>;
     score: number;
 }
 
 export interface Car {
-    streetCount: number;
-    path: Array<string>;
+    path: Array<Street>;
     score: number;
 }
 
@@ -25,7 +23,7 @@ export interface Input {
     streetCount: number;
     carCount: number;
     carScore: number;
-
+    intersections: Array<Intersection>;
     streets: Array<Street>;
     cars: Array<Car>;
 }
@@ -54,26 +52,40 @@ export function read(file: string): Input {
     for (let i = 0; i < streetCount; i++) {
         const [from, to, name, duration] = body[i].split(' ');
         streets.push({
-            name,
+            name: name.trim(),
             from: Number(from),
             to: Number(to),
             duration: Number(duration),
-            cars: Array(),
+            // cars: [],
             score: 0,
         });
     }
+
+    const intersections = new Array<Intersection>();
+    for (let i = 0; i < intersectionCount; i++) {
+        intersections.push({
+            id: i,
+            streets: streets.filter(street => street.to === i),
+        });
+    }
+
+    const map = new Map<string, Street>(
+        streets.map(street => [street.name, street])
+    );
 
     const cars = new Array<Car>();
     for (let i = 0; i < carCount; i++) {
-        const car = body[streetCount + i].split(' ');
-        cars.push({
-            streetCount: Number(car[0]),
-            path: car.slice(1),
-            score: 0,
+        const car: Partial<Car> = { score: 0 };
+        car.path = body[streetCount + i].split(' ').slice(1).map(name => {
+            const street = map.get(name.trim())!;
+            // street.cars.push(car as Car);
+            return street;
         });
+        cars.push(car as Car);
     }
 
     return {
+        intersections,
         duration,
         intersectionCount,
         streetCount,
