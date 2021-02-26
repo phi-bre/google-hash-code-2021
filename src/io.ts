@@ -1,6 +1,11 @@
 export interface Intersection {
     id: number;
     streets: Array<Street>;
+    sim?: {
+        green?: Street;
+        schedule: Schedule;
+        streetScheduleIndex: number;
+    };
 }
 
 export interface Street {
@@ -8,13 +13,22 @@ export interface Street {
     from: number;
     to: number;
     duration: number;
-    // cars: Array<Car>;
+    cars: Array<Car>;
     score: number;
+    sim?: {
+        greenTicks: number;
+        cars: Array<Car>;
+    };
 }
 
 export interface Car {
     path: Array<Street>;
     score: number;
+    sim?: {
+        pathIndex: number;
+        streetTicks: number;
+        finished?: true;
+    };
 }
 
 export interface Input {
@@ -56,7 +70,7 @@ export function read(file: string): Input {
             from: Number(from),
             to: Number(to),
             duration: Number(duration),
-            // cars: [],
+            cars: [],
             score: 0,
         });
     }
@@ -78,7 +92,7 @@ export function read(file: string): Input {
         const car: Partial<Car> = { score: 0 };
         car.path = body[streetCount + i].split(' ').slice(1).map(name => {
             const street = map.get(name.trim())!;
-            // street.cars.push(car as Car);
+            street.cars.push(car as Car);
             return street;
         });
         cars.push(car as Car);

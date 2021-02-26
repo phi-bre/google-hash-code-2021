@@ -1,56 +1,61 @@
-import { Output, Schedule } from './io.ts';
+import { Car, Output, Schedule, Street } from './io.ts';
 import { input } from './setup.ts';
 
+
 export function scored(output: Omit<Output, 'score'>): Output {
-    const schedules = new Set(output.schedules.map(schedule => ({ ...schedule, index: 0 })));
-    const streets = Object.fromEntries(input.streets.map(street => [street.name, {...street, index: 0}]));
-    const cars = new Set(input.cars.map(car => ({
-        ...car,
-        path: car.path.map(street => streets[street.name]),
-        street: 0,
-        index: 0,
-    })));
+    input.intersections.forEach(intersection => intersection.sim = { green: undefined, schedule: output.schedules.find(s => s.intersection === intersection)!, streetScheduleIndex: 0 });
+    input.streets.forEach(street => street.sim = { greenTicks: 0, cars: new Array<Car>() });
+    input.cars.forEach(car => car.sim = { pathIndex: 0, streetTicks: car.path[0].duration });
+
+    output.schedules.forEach(schedule => schedule.streetSchedules.forEach(s => console.log(s.street.name + ': ' + s.duration)))
+    console.log('')
+
     let score = 0;
-
     for (let t = 0; t < input.duration; t++) {
-        for (const schedule of schedules) {
-            const street = streets[schedule.streetSchedules[schedule.index].street.name];
-
-            // console.log(street.name, schedule.intersection.id);
-
-            if (street.index > 0) {
-                street.index--;
-            } else if (street.index === 0) {
-                schedule.index++;
-                // console.log(schedule.index, schedule.streetSchedules.length)
-                if (schedule.index === schedule.streetSchedules.length) {
-                    schedules.delete(schedule);
-                    break;
-                }
-                street.index = schedule.streetSchedules[schedule.index].duration;
+        for (const car of input.cars) {
+            if (car.sim!.finished) {
+                continue;
             }
+
+            if (car.sim!.streetTicks > 0) {
+                car.sim!.streetTicks--;
+                continue;
+            }
+
+            car.path[car.sim!.pathIndex].sim!.cars.push(car);
+            console.log('pushed car');
         }
 
-        const taken: Record<string, boolean> = {};
-        for (const car of cars) {
-            const street = car.path[car.street];
+        for (const intersection of input.intersections) {
+            const street = intersection.sim!.green;
+            if (street && street.sim!.greenTicks > 0) {
+                street.sim!.greenTicks--;
 
-            if (car.index < street.duration) {
-                car.index++;
-            } else if (car.index === street.duration) {
-                car.street++;
+                if (street.sim!.cars.length) {
+                    const car = street.sim!.cars.shift()!;
+                    car.sim!.pathIndex++;
 
-                if (car.street === car.path.length) {
-                    cars.delete(car);
-                    score += input.carScore + (input.duration - t);
-                    break;
+                    if (car.sim!.pathIndex === car.path.length) {
+                        car.sim!.finished = true;
+                        score += input.carScore + (input.duration - t);
+                        console.log('car ended');
+                        continue;
+                    }
+
+                    car.sim!.streetTicks = car.path[car.sim!.pathIndex].duration;
+                    console.log('car moved');
                 }
 
-                if (street.index !== 0 && !taken[car.street]) { // is green
-                    car.index = 0;
-                    taken[car.street] = true;
-                }
+                continue;
             }
+
+            // console.log(intersection.sim!.schedule.streetSchedules[intersection.sim!.streetScheduleIndex].street.name + ': ' + intersection.sim!.streetScheduleIndex, intersection.sim!.schedule.streetSchedules[intersection.sim!.streetScheduleIndex].street.sim!.greenTicks)
+
+            intersection.sim!.streetScheduleIndex++;
+            intersection.sim!.streetScheduleIndex %= intersection.sim!.schedule.streetSchedules.length;
+            intersection.sim!.green = intersection.sim!.schedule.streetSchedules[intersection.sim!.streetScheduleIndex].street;
+            intersection.sim!.green.sim!.greenTicks = intersection.sim!.green.duration;
+            console.log('switched green')
         }
     }
 
