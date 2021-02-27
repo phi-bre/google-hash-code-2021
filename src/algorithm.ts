@@ -1,5 +1,5 @@
 import { Output, Schedule } from './io.ts';
-import { input } from './setup.ts';
+import { input } from './main.ts';
 import { scored } from './scored.ts';
 
 export function algorithm(weights: number[]): Output {
@@ -55,5 +55,5 @@ export function algorithm(weights: number[]): Output {
     //     // }
     // }
 
-    return scored({schedules});
+    return scored({ schedules });
 }

@@ -2,7 +2,6 @@ export interface Intersection {
     id: number;
     streets: Array<Street>;
     sim?: {
-        green?: Street;
         schedule: Schedule;
         streetScheduleIndex: number;
     };
@@ -16,7 +15,6 @@ export interface Street {
     cars: Array<Car>;
     score: number;
     sim?: {
-        greenTicks: number;
         cars: Array<Car>;
     };
 }
@@ -45,6 +43,10 @@ export interface Input {
 export interface Schedule {
     intersection: Intersection;
     streetSchedules: Array<StreetSchedule>;
+    sim?: {
+        streetScheduleIndex: number;
+        streetScheduleTicks: number;
+    };
 }
 
 export interface StreetSchedule {

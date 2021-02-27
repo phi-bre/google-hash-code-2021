@@ -21,8 +21,9 @@ const process = Deno.run({ cmd: ['bin/zip'], stdout: 'null' });
 await process.status();
 process.close();
 
-import { file } from './setup.ts';
-import { write } from './io.ts';
+import { read, write } from './io.ts';
+export const file = 'b.txt';
+export const input = read(file);
 import { algorithm } from './algorithm.ts';
 
 const output = algorithm([]);
