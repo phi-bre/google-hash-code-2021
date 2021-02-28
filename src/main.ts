@@ -22,7 +22,7 @@ await process.status();
 process.close();
 
 import { read, write } from './io.ts';
-export const file = 'b.txt';
+export const file = Deno.args[0] || 'b';
 export const input = read(file);
 import { algorithm } from './algorithm.ts';
 

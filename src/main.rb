@@ -57,15 +57,21 @@ end
 
 score = 0
 (0..duration).each do |time|
+    puts "time is #{time}"
     cars.each do |car|
         if car[:street_duration] > 0
+            puts "car #{cars.index car} moved from #{car[:street_duration]} to #{car[:street_duration] - 1} on street #{car[:route].first[:name]}"
             car[:street_duration] -= 1
-        elsif car[:route].empty?
-            score += car_score + (duration - time)
-            cars.delete(car)
-        elsif !car[:route].first[:car_queue].include?(car)
-            # puts "#{car[:route].first[:name]} + #{cars.index(car)}"
-            car[:route].first[:car_queue] << car
+        else 
+            if car[:route].empty?
+                score += car_score + (duration - time)
+                cars.delete(car)
+            elsif !car[:route].first[:car_queue].include?(car)
+                puts "hello #{car[:route][0][:car_queue].count}"
+                # puts "#{car[:route].first[:name]} + #{cars.index(car)}"
+                car[:route].first[:car_queue] << car
+                #car[:route].first[:car_queue] |= [car]
+            end
         end
     end
     schedules.each do |schedule|

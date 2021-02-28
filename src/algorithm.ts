@@ -7,19 +7,18 @@ export function algorithm(weights: number[]): Output {
         .map(intersection => {
             return {
                 intersection,
-                streetSchedules: intersection.streets
+                streetSchedules: intersection.to
                     .map(street => {
                         return {
                             street,
-                            duration: Math.min(Math.floor(Math.random() * street.cars.length) + 1, input.duration),
+                            duration: Math.floor(input.duration / intersection.to.length),
                         };
                     })
                     .filter(schedule => schedule.duration > 0)
-                    .shuffle()
+                    .sort((a, b) => a.street.score - b.street.score)
             }
         })
-        .filter(intersection => intersection.streetSchedules.length)
-        .shuffle();
+        .filter(intersection => intersection.streetSchedules.length);
 
     // for (let i = 0; i < input.intersectionCount; i++) {
     //     const streets = input.streets.filter(street => street.to == i);

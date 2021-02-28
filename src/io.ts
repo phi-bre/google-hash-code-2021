@@ -1,6 +1,7 @@
 export interface Intersection {
     id: number;
-    streets: Array<Street>;
+    from: Array<Street>;
+    to: Array<Street>;
     sim?: {
         schedule: Schedule;
         streetScheduleIndex: number;
@@ -20,12 +21,11 @@ export interface Street {
 }
 
 export interface Car {
-    path: Array<Street>;
+    route: Array<Street>;
     score: number;
     sim?: {
-        pathIndex: number;
-        streetTicks: number;
-        finished?: true;
+        routeIndex: number;
+        streetDuration: number;
     };
 }
 
@@ -60,7 +60,7 @@ export interface Output {
 }
 
 export function read(file: string): Input {
-    const text = Deno.readTextFileSync(`in/${file}`);
+    const text = Deno.readTextFileSync(`in/${file}.txt`);
     const [head, ...body] = text.split('\n');
     const [duration, intersectionCount, streetCount, carCount, carScore] = head.split(' ').map(Number);
 
@@ -81,7 +81,8 @@ export function read(file: string): Input {
     for (let i = 0; i < intersectionCount; i++) {
         intersections.push({
             id: i,
-            streets: streets.filter(street => street.to === i),
+            from: streets.filter(street => street.from == i),
+            to: streets.filter(street => street.to == i),
         });
     }
 
@@ -91,13 +92,15 @@ export function read(file: string): Input {
 
     const cars = new Array<Car>();
     for (let i = 0; i < carCount; i++) {
-        const car: Partial<Car> = { score: 0 };
-        car.path = body[streetCount + i].split(' ').slice(1).map(name => {
-            const street = map.get(name.trim())!;
-            street.cars.push(car as Car);
-            return street;
-        });
-        cars.push(car as Car);
+        const route = body[streetCount + i].split(' ').slice(1).map(name => map.get(name.trim())!);
+        const score = route.length;
+        cars.push({ route, score });
+    }
+
+    for (const car of cars) {
+        for (const street of car.route) {
+            street.score += car.score;
+        }
     }
 
     return {
@@ -119,6 +122,6 @@ export function write(file: string, output: Output) {
             schedule.streetSchedules.map(({ street, duration }) => `${street.name} ${duration}`).join('\n')
         }\n`;
     }
-    Deno.writeTextFileSync(`out/${file}`, text);
+    Deno.writeTextFileSync(`out/${file}.out`, text);
     // Deno.writeTextFile(`out/${Date.now()}.json`, JSON.stringify(context));
 }
