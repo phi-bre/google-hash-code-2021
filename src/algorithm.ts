@@ -3,19 +3,36 @@ import { input } from './main.ts';
 import { scored } from './scored.ts';
 
 export function algorithm(weights: number[]): Output {
+    for (const street of input.streets) {
+        street.score = 0;
+    }
+
+    for (const car of input.cars) {
+        for (const street of car.route) {
+            street.score += (car.score) * weights[0] - (car.route.indexOf(street)) * weights[3];
+        }
+    }
+
     const schedules: Array<Schedule> = input.intersections
         .map(intersection => {
+            // const intersectionCarsCount = intersection.to.reduce((count, street) => street.cars.length + count, 0);
+            const [streetsScoreTotal, streetsCarLengthTotal] = intersection.to.reduce(([t1, t2], street) => {
+                return [street.score + t1, street.cars.length + t2];
+            }, [0, 0]);
             return {
                 intersection,
                 streetSchedules: intersection.to
                     .map(street => {
+                        const streetPriority = (street.score / streetsScoreTotal) * weights[1] + (street.cars.length / streetsCarLengthTotal) * weights[2];
+                        // const streetPriority = street.score / streetsScoreTotal;
                         return {
                             street,
-                            duration: Math.floor(input.duration / intersection.to.length),
+                            duration: Math.round(streetPriority * input.duration)
+                            // duration: Math.min(Math.floor((street.score / t1 * weights[1]) * (input.duration * weights[2])), 1)
                         };
                     })
-                    .filter(schedule => schedule.duration > 0)
-                    .sort((a, b) => a.street.score - b.street.score)
+                    .filter(schedule => schedule.duration > 0 && schedule.street.cars.length)
+                    .shuffle()
             }
         })
         .filter(intersection => intersection.streetSchedules.length);

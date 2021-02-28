@@ -93,14 +93,12 @@ export function read(file: string): Input {
     const cars = new Array<Car>();
     for (let i = 0; i < carCount; i++) {
         const route = body[streetCount + i].split(' ').slice(1).map(name => map.get(name.trim())!);
-        const score = route.length;
-        cars.push({ route, score });
-    }
-
-    for (const car of cars) {
-        for (const street of car.route) {
-            street.score += car.score;
+        const car = { route, score: 0 };
+        for (const street of route) {
+            car.score += street.duration;
+            street.cars.push(car);
         }
+        cars.push(car);
     }
 
     return {
