@@ -2,10 +2,13 @@ export interface Intersection {
     id: number;
     from: Array<Street>;
     to: Array<Street>;
+    cycle: number;
     sim?: {
         schedule: Schedule;
         streetScheduleIndex: number;
     };
+    indexes: Array<StreetSchedule>;
+    schedule?: Schedule;
 }
 
 export interface Street {
@@ -14,7 +17,7 @@ export interface Street {
     to: number;
     duration: number;
     cars: Array<Car>;
-    score: number;
+    indexed: boolean;
     sim?: {
         cars: Array<Car>;
     };
@@ -64,26 +67,32 @@ export function read(file: string): Input {
     const [head, ...body] = text.split('\n');
     const [duration, intersectionCount, streetCount, carCount, carScore] = head.split(' ').map(Number);
 
+    const intersections = new Array<Intersection>();
+    for (let i = 0; i < intersectionCount; i++) {
+        intersections.push({
+            id: i,
+            from: [],
+            to: [],
+            cycle: 0,
+            indexes: [],
+            schedule: undefined,
+        });
+    }
+
     const streets = new Array<Street>();
     for (let i = 0; i < streetCount; i++) {
         const [from, to, name, duration] = body[i].split(' ');
-        streets.push({
+        const street = {
             name: name.trim(),
             from: Number(from),
             to: Number(to),
             duration: Number(duration),
             cars: [],
-            score: 0,
-        });
-    }
-
-    const intersections = new Array<Intersection>();
-    for (let i = 0; i < intersectionCount; i++) {
-        intersections.push({
-            id: i,
-            from: streets.filter(street => street.from == i),
-            to: streets.filter(street => street.to == i),
-        });
+            indexed: false,
+        };
+        intersections[street.from].from.push(street);
+        intersections[street.to].to.push(street);
+        streets.push(street);
     }
 
     const map = new Map<string, Street>(

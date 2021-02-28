@@ -1,9 +1,12 @@
 import { Car, Output } from './io.ts';
-import { input } from './main.ts';
+import { input, setup } from './main.ts';
 
 export function scored(output: Omit<Output, 'score'>): Output {
-    output.schedules.forEach(schedule => schedule.sim = { streetScheduleIndex: 0, streetScheduleTicks: schedule.streetSchedules[0].duration });
-    input.streets.forEach(street => street.sim = { cars: new Array<Car>() });
+    output.schedules.forEach(schedule => schedule.sim = {streetScheduleIndex: 0, streetScheduleTicks: schedule.streetSchedules[0].duration});
+    input.streets.forEach(street => {
+        street.indexed = false;
+        street.sim = {cars: new Array<Car>()};
+    });
     input.cars.forEach(car => car.sim = { routeIndex: 0, streetDuration: 0 });
     const cars = new Set(input.cars);
 
@@ -23,6 +26,13 @@ export function scored(output: Omit<Output, 'score'>): Output {
                 const street = car.route[car.sim!.routeIndex];
                 if (!street.sim!.cars.includes(car)) {
                     street.sim!.cars.push(car);
+                } else if (!street.indexed) { // waiting in line
+                    const intersection = input.intersections[street.to];
+                    const index = time % intersection.cycle;
+                    if (intersection.indexes[index] === undefined) {
+                        intersection.indexes[index] = intersection.schedule!.streetSchedules.find(s => s.street === street)!;
+                        street.indexed = true;
+                    }
                 }
             }
         }
@@ -44,5 +54,20 @@ export function scored(output: Omit<Output, 'score'>): Output {
         }
     }
 
+    for (const intersection of input.intersections) {
+        for (const {street} of intersection.schedule!.streetSchedules) {
+            if (!street.indexed) {
+                for (let i = 0; i < intersection.schedule!.streetSchedules.length; i++) {
+                    if (intersection.indexes[i] === undefined) {
+                        intersection.indexes[i] = intersection.schedule!.streetSchedules.find(s => s.street === street)!;
+                        break;
+                    }
+                }
+                street.indexed = true;
+            }
+        }
+    }
+
     return {...output, score};
 }
+
