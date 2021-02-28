@@ -9,7 +9,8 @@ export function algorithm(weights: number[]): Output {
 
     for (const car of input.cars) {
         for (const street of car.route) {
-            street.score += (car.score) * weights[0] - (car.route.indexOf(street)) * weights[3];
+            const throughput = input.intersections[street.from].from.length;
+            street.score += ((car.score) * weights[0]) + (throughput * weights[4]) + ((car.route.indexOf(street)) * weights[5]);
         }
     }
 
@@ -23,16 +24,18 @@ export function algorithm(weights: number[]): Output {
                 intersection,
                 streetSchedules: intersection.to
                     .map(street => {
-                        const streetPriority = (street.score / streetsScoreTotal) * weights[1] + (street.cars.length / streetsCarLengthTotal) * weights[2];
-                        // const streetPriority = street.score / streetsScoreTotal;
+                        // const streetPriority = (street.score / streetsScoreTotal) * weights[1] + (street.cars.length / streetsCarLengthTotal) * weights[2];
                         return {
                             street,
-                            duration: Math.round(streetPriority * input.duration)
-                            // duration: Math.min(Math.floor((street.score / t1 * weights[1]) * (input.duration * weights[2])), 1)
+                            // duration: Math.round(streetPriority * input.duration)
+                            duration: street.cars.length === 0 ? 0 : Math.max(1, Math.min(input.duration,
+                                Math.round((street.cars.length / streetsScoreTotal * weights[1]) * (street.score / streetsCarLengthTotal * weights[2]) * (input.duration * weights[3]))
+                            ))
+                            // duration: Math.min(Math.floor((street.score / intersectionCarsCount * weights[1]) * (input.duration * weights[2])), 1)
                         };
                     })
-                    .filter(schedule => schedule.duration > 0 && schedule.street.cars.length)
-                    .shuffle()
+                    .filter(schedule => schedule.duration > 0)
+                    // .shuffle()
             }
         })
         .filter(intersection => intersection.streetSchedules.length);

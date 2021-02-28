@@ -62,7 +62,7 @@ import { algorithm } from './algorithm.ts';
 
 export let score = 0;
 export const iterations = Infinity;
-let weights = new Array(4).fill(0).map(Math.random)//.map(n => n * 10);
+let weights = new Array(6).fill(0).map(Math.random)//.map(n => n * 10);
 let steps = weights.slice().fill(1).map(Math.random);
 let last = weights.slice().fill(0);
 let weight = 0;
